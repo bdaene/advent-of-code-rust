@@ -9,20 +9,16 @@ pub struct Day01Solution{
     elves: Vec<Elf>,
 }
 
-impl Day01Solution {
-    fn parse_data(input: &str) -> Vec<Elf> {
-        input.split("\n\n").map(
+impl Solution for Day01Solution {
+    fn new(input: &str) -> Self {
+        let elves = input.split("\n\n").map(
             |elf| elf.lines().filter_map(
                 |calories| calories.parse().ok()
             ).collect()
-        ).collect()
-    }
-}
+        ).collect();
 
-impl Solution for Day01Solution {
-    fn new(input: &str) -> Self {
         Day01Solution {
-            elves: Day01Solution::parse_data(input)
+            elves: elves
         }
     }
 

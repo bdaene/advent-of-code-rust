@@ -1,7 +1,7 @@
 use std::fs;
 
 use clap::Parser;
-use advent_of_code_2022::{Solution, get_solution};
+use advent_of_code_2022::get_solution;
 
 #[derive(Parser, Debug)]
 struct Args {
