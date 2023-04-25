@@ -1,6 +1,5 @@
 use crate::Solution;
 
-#[derive(Debug)]
 pub struct Day02Solution {
     strategy_guide: Vec<(u8, u8)>,
 }
@@ -13,7 +12,10 @@ impl Solution for Day02Solution {
             let mut rule = line.chars();
 
             let opponent = rule.next().expect("Missing opponent part of rule.");
-            assert!(rule.next().expect("Missing whitespace part in rule.").is_whitespace());
+            assert!(rule
+                .next()
+                .expect("Missing whitespace part in rule.")
+                .is_whitespace());
             let me = rule.next().expect("Missing me part of rule.");
 
             strategy.push((opponent as u8 - 'A' as u8, me as u8 - 'X' as u8));

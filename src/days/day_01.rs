@@ -2,9 +2,16 @@ use itertools::Itertools;
 
 use crate::Solution;
 
-type Elf = Vec<u32>;
+struct Elf {
+    calories: Vec<u32>,
+}
 
-#[derive(Debug)]
+impl Elf {
+    fn get_total_calories(&self) -> u32 {
+        self.calories.iter().sum::<u32>()
+    }
+}
+
 pub struct Day01Solution {
     elves: Vec<Elf>,
 }
@@ -14,9 +21,11 @@ impl Solution for Day01Solution {
         let elves = input
             .split("\n\n")
             .map(|elf| {
-                elf.lines()
+                let calories = elf
+                    .lines()
                     .filter_map(|calories| calories.parse().ok())
-                    .collect()
+                    .collect();
+                Elf { calories: calories }
             })
             .collect();
 
@@ -26,7 +35,7 @@ impl Solution for Day01Solution {
     fn part_1(&self) -> String {
         self.elves
             .iter()
-            .map(|elf| elf.iter().sum::<u32>())
+            .map(|elf| elf.get_total_calories())
             .max()
             .unwrap()
             .to_string()
@@ -35,7 +44,7 @@ impl Solution for Day01Solution {
     fn part_2(&self) -> String {
         self.elves
             .iter()
-            .map(|elf| elf.iter().sum::<u32>())
+            .map(|elf| elf.get_total_calories())
             .sorted()
             .rev()
             .take(3)
