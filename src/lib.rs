@@ -1,14 +1,15 @@
 pub mod days;
 
 pub trait Solution {
-    fn new(data: &str) -> Self 
-    where Self: Sized;
+    fn new(data: &str) -> Self
+    where
+        Self: Sized;
 
     fn part_1(&self) -> String {
         String::from("Not implemented yet.")
     }
 
-    fn part_2(&self) -> String{
+    fn part_2(&self) -> String {
         String::from("Not implemented yet.")
     }
 }
@@ -20,4 +21,3 @@ pub fn get_solution(day: u8, data: &str) -> Box<dyn Solution> {
         _ => panic!("Invalid day"),
     }
 }
-

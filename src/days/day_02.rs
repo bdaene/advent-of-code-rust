@@ -1,11 +1,9 @@
 use crate::Solution;
 
 #[derive(Debug)]
-pub struct Day02Solution{
-    strategy_guide: Vec<(char, char)>,
+pub struct Day02Solution {
+    strategy_guide: Vec<(u8, u8)>,
 }
-
-
 
 impl Solution for Day02Solution {
     fn new(input: &str) -> Self {
@@ -15,10 +13,10 @@ impl Solution for Day02Solution {
             let mut rule = line.chars();
 
             let opponent = rule.next().expect("Missing opponent part of rule.");
-            assert!(rule.next().unwrap().is_whitespace());
+            assert!(rule.next().expect("Missing whitespace part in rule.").is_whitespace());
             let me = rule.next().expect("Missing me part of rule.");
-            
-            strategy.push((opponent as char, me as char));
+
+            strategy.push((opponent as u8 - 'A' as u8, me as u8 - 'X' as u8));
         }
 
         Day02Solution {
@@ -27,65 +25,49 @@ impl Solution for Day02Solution {
     }
 
     fn part_1(&self) -> String {
-        self.strategy_guide.iter().map(
-            |rule| match rule {
-                ('A', 'X') => 1 + 3,
-                ('B', 'X') => 1 + 0,
-                ('C', 'X') => 1 + 6,
-                ('A', 'Y') => 2 + 6,
-                ('B', 'Y') => 2 + 3,
-                ('C', 'Y') => 2 + 0,
-                ('A', 'Z') => 3 + 0,
-                ('B', 'Z') => 3 + 6,
-                ('C', 'Z') => 3 + 3,
-                _ => panic!("Invalid rule.")
-            } ).sum::<u32>().to_string()
+        self.strategy_guide
+            .iter()
+            .map(|(opponent, me)| ((1 + me) + (4 + me - opponent) % 3 * 3) as u32)
+            .sum::<u32>()
+            .to_string()
     }
 
     fn part_2(&self) -> String {
-        self.strategy_guide.iter().map(
-            |rule| match rule {
-                ('A', 'X') => 3 + 0,
-                ('B', 'X') => 1 + 0,
-                ('C', 'X') => 2 + 0,
-                ('A', 'Y') => 1 + 3,
-                ('B', 'Y') => 2 + 3,
-                ('C', 'Y') => 3 + 3,
-                ('A', 'Z') => 2 + 6,
-                ('B', 'Z') => 3 + 6,
-                ('C', 'Z') => 1 + 6,
-                _ => panic!("Invalid rule.")
-            } ).sum::<u32>().to_string()
+        self.strategy_guide
+            .iter()
+            .map(|(opponent, rule)| ((opponent + rule + 2) % 3 + 1 + rule * 3) as u32)
+            .sum::<u32>()
+            .to_string()
     }
 }
 
 #[cfg(test)]
 mod test {
-    use std::fs;
     use crate::Solution;
+    use std::fs;
 
     use super::Day02Solution;
 
     fn get_solution() -> Day02Solution {
-        let data:String = fs::read_to_string("data/day_02_example.txt").unwrap();
+        let data = fs::read_to_string("data/day_02_example.txt").unwrap();
 
         Day02Solution::new(&data)
     }
 
     #[test]
-    fn new () {
+    fn new() {
         get_solution();
     }
 
     #[test]
-    fn part_1 () {
+    fn part_1() {
         let solution = get_solution();
 
         assert_eq!(solution.part_1(), "15");
     }
 
     #[test]
-    fn part_2 () {
+    fn part_2() {
         let solution = get_solution();
 
         assert_eq!(solution.part_2(), "12");

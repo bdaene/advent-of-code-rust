@@ -1,7 +1,7 @@
 use std::fs;
 
-use clap::Parser;
 use advent_of_code_2022::get_solution;
+use clap::Parser;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -10,7 +10,6 @@ struct Args {
     /// data path
     data: String,
 }
-
 
 fn main() {
     let args = Args::parse();
