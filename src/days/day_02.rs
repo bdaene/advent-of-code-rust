@@ -1,4 +1,5 @@
 use crate::SolutionBase;
+use itertools::Itertools;
 
 #[derive(PartialEq, Debug)]
 pub struct Solution {
@@ -10,15 +11,7 @@ impl SolutionBase for Solution {
         let mut strategy = Vec::new();
 
         for line in data.lines() {
-            let mut rule = line.chars();
-
-            let opponent = rule.next().expect("Missing opponent part of rule.");
-            assert!(rule
-                .next()
-                .expect("Missing whitespace part in rule.")
-                .is_whitespace());
-            let me = rule.next().expect("Missing me part of rule.");
-
+            let (opponent, _, me) = line.chars().next_tuple().expect("Invalid rule: {line}");
             strategy.push((opponent as u8 - 'A' as u8, me as u8 - 'X' as u8));
         }
 
