@@ -5,38 +5,33 @@ use crate::SolutionBase;
 
 #[derive(PartialEq, Debug)]
 pub struct Solution {
-    rucksacks: Vec<Vec<char>>,
+    rucksacks: Vec<String>,
 }
 
 fn get_priority(c: char) -> u32 {
-    let offset = match c {
-        'a'..='z' => 'a' as i8 - 1,
-        'A'..='Z' => 'A' as i8 - 27,
+    match c {
+        'a'..='z' => (c as u32) - ('a' as u32) + 1,
+        'A'..='Z' => (c as u32) - ('A' as u32) + 27,
         _ => panic!("Invalid char {c}"),
-    };
-    (c as i8 - offset) as u32
+    }
 }
 
-fn char_set_unique_intersection<I, Set>(sets: I) -> char
-where
-    I: IntoIterator<Item = Set>,
-    Set: IntoIterator<Item = char>,
-{
-    sets.into_iter()
+fn get_common_character<'a>(sets: &Vec<&str>) -> char {
+    sets.iter()
         .map(|set| {
-            let set: HashSet<char> = HashSet::from_iter(set);
+            let set: HashSet<char> = HashSet::from_iter(set.chars().clone());
             set
         })
-        .reduce(|l, r| &l & &r)
+        .reduce(|a, b| &a & &b)
         .unwrap_or_default()
         .into_iter()
         .next()
-        .expect("No common element")
+        .expect("No common character")
 }
 
 impl SolutionBase for Solution {
     fn new(data: &str) -> Self {
-        let rucksacks = data.lines().map(|line| line.chars().collect()).collect();
+        let rucksacks = data.lines().map(String::from).collect();
 
         Solution {
             rucksacks: rucksacks,
@@ -44,26 +39,26 @@ impl SolutionBase for Solution {
     }
 
     fn part_1(&self) -> String {
-        self.rucksacks
-            .iter()
-            .map(|rucksack| {
-                let left = rucksack[..rucksack.len()/2].iter().cloned();
-                let right = rucksack[rucksack.len()/2..].iter().cloned();
-                let compartements = vec![left, right];
-                get_priority(char_set_unique_intersection(compartements))
-            })
-            .sum::<u32>()
-            .to_string()
+        let mut total = 0;
+
+        for rucksack in self.rucksacks.iter() {
+            let compartements = rucksack.split_at(rucksack.len() / 2);
+            total += get_priority(get_common_character(&vec![
+                compartements.0,
+                compartements.1,
+            ]))
+        }
+        total.to_string()
     }
 
     fn part_2(&self) -> String {
-        self.rucksacks
-            .iter()
-            .chunks(3)
-            .into_iter()
-            .map(|elves| get_priority(char_set_unique_intersection(elves.cloned())))
-            .sum::<u32>()
-            .to_string()
+        let mut total = 0;
+
+        for elves in self.rucksacks.chunks(3) {
+            let elves = elves.iter().map(String::as_str).collect_vec();
+            total += get_priority(get_common_character(&elves))
+        }
+        total.to_string()
     }
 }
 
