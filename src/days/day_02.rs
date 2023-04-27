@@ -1,14 +1,15 @@
-use crate::Solution;
+use crate::SolutionBase;
 
-pub struct Day02Solution {
+#[derive(PartialEq, Debug)]
+pub struct Solution {
     strategy_guide: Vec<(u8, u8)>,
 }
 
-impl Solution for Day02Solution {
-    fn new(input: &str) -> Self {
+impl SolutionBase for Solution {
+    fn new(data: &str) -> Self {
         let mut strategy = Vec::new();
 
-        for line in input.lines() {
+        for line in data.lines() {
             let mut rule = line.chars();
 
             let opponent = rule.next().expect("Missing opponent part of rule.");
@@ -21,7 +22,7 @@ impl Solution for Day02Solution {
             strategy.push((opponent as u8 - 'A' as u8, me as u8 - 'X' as u8));
         }
 
-        Day02Solution {
+        Solution {
             strategy_guide: strategy,
         }
     }
@@ -45,20 +46,27 @@ impl Solution for Day02Solution {
 
 #[cfg(test)]
 mod test {
-    use crate::Solution;
+    use crate::SolutionBase;
     use std::fs;
 
-    use super::Day02Solution;
+    use super::*;
 
-    fn get_solution() -> Day02Solution {
+    fn get_solution() -> Solution {
         let data = fs::read_to_string("data/day_02_example.txt").unwrap();
 
-        Day02Solution::new(&data)
+        Solution::new(&data)
     }
 
     #[test]
     fn new() {
-        get_solution();
+        let solution = get_solution();
+
+        assert_eq!(
+            solution,
+            Solution {
+                strategy_guide: vec![(0, 1), (1, 0), (2, 2)]
+            }
+        )
     }
 
     #[test]

@@ -1,7 +1,8 @@
 use itertools::Itertools;
 
-use crate::Solution;
+use crate::SolutionBase;
 
+#[derive(PartialEq, Debug)]
 struct Elf {
     calories: Vec<u32>,
 }
@@ -12,13 +13,14 @@ impl Elf {
     }
 }
 
-pub struct Day01Solution {
+#[derive(PartialEq, Debug)]
+pub struct Solution {
     elves: Vec<Elf>,
 }
 
-impl Solution for Day01Solution {
-    fn new(input: &str) -> Self {
-        let elves = input
+impl SolutionBase for Solution {
+    fn new(data: &str) -> Self {
+        let elves = data
             .split("\n\n")
             .map(|elf| {
                 let calories = elf
@@ -29,7 +31,7 @@ impl Solution for Day01Solution {
             })
             .collect();
 
-        Day01Solution { elves: elves }
+        Solution { elves: elves }
     }
 
     fn part_1(&self) -> String {
@@ -55,20 +57,43 @@ impl Solution for Day01Solution {
 
 #[cfg(test)]
 mod test {
-    use crate::Solution;
+    use crate::SolutionBase;
     use std::fs;
 
-    use super::Day01Solution;
+    use super::*;
 
-    fn get_solution() -> Day01Solution {
+    fn get_solution() -> Solution {
         let data: String = fs::read_to_string("data/day_01_example.txt").unwrap();
 
-        Day01Solution::new(&data)
+        Solution::new(&data)
     }
 
     #[test]
     fn new() {
-        get_solution();
+        let solution = get_solution();
+
+        assert_eq!(
+            solution,
+            Solution {
+                elves: vec![
+                    Elf {
+                        calories: vec![1000, 2000, 3000]
+                    },
+                    Elf {
+                        calories: vec![4000]
+                    },
+                    Elf {
+                        calories: vec![5000, 6000]
+                    },
+                    Elf {
+                        calories: vec![7000, 8000, 9000]
+                    },
+                    Elf {
+                        calories: vec![10000]
+                    },
+                ]
+            }
+        )
     }
 
     #[test]
