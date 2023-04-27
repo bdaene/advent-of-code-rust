@@ -40,8 +40,8 @@
             },
             "args": [
                 "--",
-                "101",
-                "data/bonus_01.txt"
+                "03",
+                "data/day_03.txt"
             ],
             "cwd": "${workspaceFolder}"
         },
