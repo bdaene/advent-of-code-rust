@@ -1,4 +1,4 @@
-use itertools::Itertools;
+use nom::{bytes, character, sequence, IResult};
 
 use crate::SolutionBase;
 
@@ -10,24 +10,29 @@ pub struct Solution {
     pairs: Vec<(Assignement, Assignement)>,
 }
 
+fn parse_assignement(input: &str) -> IResult<&str, Assignement> {
+    let (input, (a, b)) = sequence::separated_pair(
+        character::complete::u8,
+        bytes::complete::tag("-"),
+        character::complete::u8,
+    )(input)?;
+    Ok((input, Assignement(a, b)))
+}
+
+fn parse_line(input: &str) -> IResult<&str, (Assignement, Assignement)> {
+    let (input, (a, b)) = sequence::separated_pair(
+        parse_assignement,
+        bytes::complete::tag(","),
+        parse_assignement,
+    )(input)?;
+    Ok((input, (a, b)))
+}
+
 impl SolutionBase for Solution {
     fn new(data: &str) -> Self {
         let pairs = data
             .lines()
-            .map(|assignements| {
-                assignements
-                    .split(',')
-                    .map(|assignement| {
-                        let (start, end) = assignement
-                            .split('-')
-                            .map(|bound| bound.parse().expect("Should be u8."))
-                            .collect_tuple()
-                            .expect("Could not parse assignement.");
-                        Assignement(start, end)
-                    })
-                    .collect_tuple()
-                    .expect("Could not parse assignements")
-            })
+            .map(|line| parse_line(line).unwrap().1)
             .collect();
 
         Solution { pairs }
