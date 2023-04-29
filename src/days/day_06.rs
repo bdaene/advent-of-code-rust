@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use itertools::Itertools;
+use itertools::{izip, Itertools};
 
 use crate::SolutionBase;
 
@@ -10,28 +10,27 @@ pub struct Solution {
 }
 
 fn get_first_marker_position(buffer: &str, marker_length: usize) -> Option<usize> {
-    let mut marker = vec![buffer.chars().nth(0)?; marker_length];
-    let mut count: HashMap<char, usize> = HashMap::new();
-    count.insert(marker[0], marker_length);
+    let mut letters: HashMap<char, usize> = HashMap::new();
+    for c in buffer.chars().take(marker_length) {
+        letters.entry(c).and_modify(|v| *v += 1).or_insert(1);
+    }
+    let mut count = letters.len();
+    if count == marker_length {
+        return Some(marker_length);
+    }
 
-    for (i, c) in buffer.chars().enumerate() {
-        let old_char = marker[0];
-        marker.rotate_left(1);
-        marker[marker_length - 1] = c;
-
-        count.entry(old_char).and_modify(|v| *v -= 1);
-        count.entry(c).and_modify(|v| *v += 1).or_insert(1);
-
-        if *count
-            .get(&old_char)
-            .expect("Old char have been insert before.")
-            == 1
-        {
-            if count.iter().all(|(_, v)| *v <= 1) {
-                return Some(i + 1);
-            }
+    for (i, (a, b)) in izip!(buffer.chars(), buffer.chars().skip(marker_length)).enumerate() {
+        if *(letters.entry(a).and_modify(|v| *v -= 1).or_insert(0)) == 0 {
+            count -= 1;
+        }
+        if *(letters.entry(b).and_modify(|v| *v += 1).or_insert(1)) == 1 {
+            count += 1;
+        }
+        if count == marker_length {
+            return Some(i + marker_length + 1);
         }
     }
+
     None
 }
 
