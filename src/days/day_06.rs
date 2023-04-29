@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-use itertools::{izip, Itertools};
+use itertools::Itertools;
 
 use crate::SolutionBase;
 
@@ -10,27 +8,29 @@ pub struct Solution {
 }
 
 fn get_first_marker_position(buffer: &str, marker_length: usize) -> Option<usize> {
-    let mut letters: HashMap<char, usize> = HashMap::new();
-    for c in buffer.chars().take(marker_length) {
-        letters.entry(c).and_modify(|v| *v += 1).or_insert(1);
-    }
-    let mut count = letters.len();
-    if count == marker_length {
-        return Some(marker_length);
-    }
+    let buffer = buffer.as_bytes();
+    let mut letters = [0u16; 256];
+    let mut count = 0u16;
 
-    for (i, (a, b)) in izip!(buffer.chars(), buffer.chars().skip(marker_length)).enumerate() {
-        if *(letters.entry(a).and_modify(|v| *v -= 1).or_insert(0)) == 0 {
-            count -= 1;
-        }
-        if *(letters.entry(b).and_modify(|v| *v += 1).or_insert(1)) == 1 {
+    for (i, c) in buffer.iter().enumerate() {
+        let c = *c as usize;
+        letters[c] += 1;
+        if letters[c] == 1 {
             count += 1;
         }
-        if count == marker_length {
-            return Some(i + marker_length + 1);
+
+        if i >= marker_length {
+            let c = buffer[i - marker_length] as usize;
+            letters[c] -= 1;
+            if letters[c] == 0 {
+                count -= 1;
+            }
+        }
+
+        if count == marker_length as u16 {
+            return Some(i + 1);
         }
     }
-
     None
 }
 
