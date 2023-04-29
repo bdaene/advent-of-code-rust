@@ -21,6 +21,7 @@ pub fn get_solution(day: u8, data: &str) -> Box<dyn SolutionBase> {
         3 => Box::new(days::day_03::Solution::new(data)),
         4 => Box::new(days::day_04::Solution::new(data)),
         5 => Box::new(days::day_05::Solution::new(data)),
+        6 => Box::new(days::day_06::Solution::new(data)),
         101 => Box::new(days::bonus_01::Solution::new(data)),
         _ => panic!("Invalid day"),
     }
