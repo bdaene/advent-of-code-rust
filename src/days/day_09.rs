@@ -6,10 +6,10 @@ use crate::SolutionBase;
 
 #[derive(PartialEq, Clone, Copy, Debug)]
 enum Direction {
-    U,
-    D,
-    L,
-    R,
+    Up,
+    Down,
+    Left,
+    Right,
 }
 
 type Movement = (Direction, u8);
@@ -25,52 +25,75 @@ fn parse_movement(input: &str) -> IResult<&str, Movement> {
         character::complete::space1,
         character::complete::u8,
     )(input)?;
-    let movement = match direction {
-        "U" => (Direction::U, distance),
-        "D" => (Direction::D, distance),
-        "L" => (Direction::L, distance),
-        "R" => (Direction::R, distance),
+    let direction = match direction {
+        "U" => Direction::Up,
+        "D" => Direction::Down,
+        "L" => Direction::Left,
+        "R" => Direction::Right,
         _ => panic!("Unknown direction {}", direction),
     };
 
-    Ok((input, movement))
+    Ok((input, (direction, distance)))
 }
 
-#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+#[derive(PartialEq, Eq, Hash, Clone, Default, Debug)]
 struct Position {
     x: i16,
     y: i16,
 }
 
 impl Position {
-    fn update(&mut self, direction: Direction, distance: u8) {
-        let distance = distance as i16;
-
+    fn move_one_step(&mut self, direction: Direction) {
         match direction {
-            Direction::U => self.y += distance,
-            Direction::D => self.y -= distance,
-            Direction::L => self.x -= distance,
-            Direction::R => self.x += distance,
+            Direction::Up => self.y += 1,
+            Direction::Down => self.y -= 1,
+            Direction::Left => self.x -= 1,
+            Direction::Right => self.x += 1,
         }
     }
 
-    fn follow(&mut self, position: &Position) {
-        let distance = (position.x - self.x).abs().max((position.y - self.y).abs());
-        if distance > 1 {
-            if self.x < position.x {
-                self.x += 1
+    fn follow(&self, position: &Position) -> Option<Position> {
+        let delta_x = position.x - self.x;
+        let delta_y = position.y - self.y;
+
+        if delta_x.abs() > 1 || delta_y.abs() > 1 {
+            let x = self.x + delta_x.signum();
+            let y = self.y + delta_y.signum();
+            Some(Position { x, y })
+        } else {
+            None
+        }
+    }
+}
+
+fn get_tail_positions(size: usize, movements: &[Movement]) -> HashSet<Position> {
+    assert!(size >= 1, "The rope should have at least one knot");
+
+    let mut rope = vec![Position::default(); size];
+    let mut tail_positions = HashSet::new();
+
+    tail_positions.insert(rope.last().unwrap().clone());
+
+    for (direction, distance) in movements {
+        for _ in 0..*distance {
+            rope[0].move_one_step(*direction);
+            let mut all_moved = true;
+            for i in 1..rope.len() {
+                match rope[i].follow(&rope[i - 1]) {
+                    Some(position) => rope[i] = position,
+                    None => {
+                        all_moved = false;
+                        break;
+                    }
+                }
             }
-            if self.x > position.x {
-                self.x -= 1
-            }
-            if self.y < position.y {
-                self.y += 1
-            }
-            if self.y > position.y {
-                self.y -= 1
+            if all_moved {
+                tail_positions.insert(rope.last().unwrap().clone());
             }
         }
     }
+
+    tail_positions
 }
 
 impl SolutionBase for Solution {
@@ -86,41 +109,13 @@ impl SolutionBase for Solution {
     }
 
     fn part_1(&self) -> String {
-        let mut head = Position { x: 0, y: 0 };
-        let mut tail = Position { x: 0, y: 0 };
-
-        let mut visited = HashSet::new();
-        visited.insert(tail.clone());
-
-        for (direction, distance) in self.movements.iter() {
-            for _ in 0..*distance {
-                head.update(*direction, 1);
-                tail.follow(&head);
-                visited.insert(tail.clone());
-            }
-        }
-
-        visited.len().to_string()
+        let tail_positions = get_tail_positions(2, &self.movements);
+        tail_positions.len().to_string()
     }
 
     fn part_2(&self) -> String {
-        let mut rope = vec![Position{x:0, y:0}; 10];
-        let mut visited = HashSet::new();
-
-        visited.insert(rope[9].clone());
-
-        for (direction, distance) in self.movements.iter() {
-            for _ in 0..*distance {
-                rope[0].update(*direction, 1);
-                for i in 1..rope.len() {
-                    let (left, right) = rope.split_at_mut(i);
-                    right[0].follow(&left[i-1]);
-                }
-                visited.insert(rope[9].clone());
-            }
-        }
-
-        visited.len().to_string()
+        let tail_positions = get_tail_positions(10, &self.movements);
+        tail_positions.len().to_string()
     }
 }
 
@@ -145,14 +140,14 @@ mod test {
             solution,
             Solution {
                 movements: vec![
-                    (Direction::R, 4),
-                    (Direction::U, 4),
-                    (Direction::L, 3),
-                    (Direction::D, 1),
-                    (Direction::R, 4),
-                    (Direction::D, 1),
-                    (Direction::L, 5),
-                    (Direction::R, 2),
+                    (Direction::Right, 4),
+                    (Direction::Up, 4),
+                    (Direction::Left, 3),
+                    (Direction::Down, 1),
+                    (Direction::Right, 4),
+                    (Direction::Down, 1),
+                    (Direction::Left, 5),
+                    (Direction::Right, 2),
                 ]
             }
         )
