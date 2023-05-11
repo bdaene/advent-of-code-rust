@@ -1,5 +1,6 @@
 use itertools::Itertools;
 use nom::{branch, bytes, character, combinator, multi, sequence, IResult};
+use num::integer::gcd;
 
 use crate::SolutionBase;
 
@@ -133,6 +134,39 @@ impl<'a> MonkeyState<'a> {
     }
 }
 
+fn get_monkey_buisness(monkeys: &Vec<Monkey>, rounds: usize, worry_relief: u64) -> Vec<u64> {
+    let mut monkeys: Vec<MonkeyState> = monkeys
+        .iter()
+        .map(|monkey| MonkeyState::new(monkey))
+        .collect();
+
+    let modulus = monkeys.iter().fold(1, |acc, monkey| {
+        acc * monkey.monkey.test / gcd(acc, monkey.monkey.test)
+    });
+
+    for _ in 1..=rounds {
+        for i in 0..monkeys.len() {
+            for item in monkeys[i].items.clone() {
+                let item = match monkeys[i].monkey.operation {
+                    Operation::Add(value) => item + value,
+                    Operation::Mul(value) => item * value,
+                    Operation::Square => item * item,
+                } / worry_relief
+                    % modulus;
+                let target = match item % monkeys[i].monkey.test {
+                    0 => monkeys[i].monkey.monkey_if_true,
+                    _ => monkeys[i].monkey.monkey_if_false,
+                };
+                monkeys[target].items.push(item)
+            }
+            monkeys[i].inspections += monkeys[i].items.len() as u64;
+            monkeys[i].items.clear();
+        }
+    }
+
+    monkeys.iter().map(|monkey| monkey.inspections).collect()
+}
+
 impl SolutionBase for Solution {
     fn new(data: &str) -> Self {
         let (_, monkeys) = multi::many0(parse_monkey)(data).unwrap();
@@ -140,34 +174,8 @@ impl SolutionBase for Solution {
     }
 
     fn part_1(&self) -> String {
-        let mut monkeys: Vec<MonkeyState> = self
-            .monkeys
+        get_monkey_buisness(&self.monkeys, 20, 3)
             .iter()
-            .map(|monkey| MonkeyState::new(monkey))
-            .collect();
-
-        for _ in 1..=20 {
-            for i in 0..monkeys.len() {
-                for item in monkeys[i].items.clone() {
-                    let item = match monkeys[i].monkey.operation {
-                        Operation::Add(value) => item + value,
-                        Operation::Mul(value) => item * value,
-                        Operation::Square => item * item,
-                    } / 3;
-                    let target = match item % monkeys[i].monkey.test {
-                        0 => monkeys[i].monkey.monkey_if_true,
-                        _ => monkeys[i].monkey.monkey_if_false,
-                    };
-                    monkeys[target].items.push(item)
-                }
-                monkeys[i].inspections += monkeys[i].items.len() as u64;
-                monkeys[i].items.clear();
-            }
-        }
-
-        monkeys
-            .iter()
-            .map(|monkey| monkey.inspections)
             .sorted()
             .rev()
             .take(2)
@@ -176,40 +184,12 @@ impl SolutionBase for Solution {
     }
 
     fn part_2(&self) -> String {
-        let mut monkeys: Vec<MonkeyState> = self
-            .monkeys
+        get_monkey_buisness(&self.monkeys, 10_000, 1)
             .iter()
-            .map(|monkey| MonkeyState::new(monkey))
-            .collect();
-
-        let modulus = self.monkeys.iter().fold(1, |acc, monkey| acc * monkey.test);
-
-        for _ in 1..=10_000 {
-            for i in 0..monkeys.len() {
-                for item in monkeys[i].items.clone() {
-                    let item = match monkeys[i].monkey.operation {
-                        Operation::Add(value) => item + value,
-                        Operation::Mul(value) => item * value,
-                        Operation::Square => item * item,
-                    } % modulus;
-                    let target = match item % monkeys[i].monkey.test {
-                        0 => monkeys[i].monkey.monkey_if_true,
-                        _ => monkeys[i].monkey.monkey_if_false,
-                    };
-                    monkeys[target].items.push(item)
-                }
-                monkeys[i].inspections += monkeys[i].items.len() as u64;
-                monkeys[i].items.clear();
-            }
-        }
-
-        monkeys
-            .iter()
-            .map(|monkey| monkey.inspections)
             .sorted()
             .rev()
             .take(2)
-            .fold(1, |acc, value| acc * value as u64)
+            .fold(1, |acc, value| acc * value)
             .to_string()
     }
 }
