@@ -16,15 +16,17 @@ pub trait SolutionBase {
 
 pub fn get_solution(day: u8, data: &str) -> Box<dyn SolutionBase> {
     match day {
-        1 => Box::new(days::day_01::Solution::new(data)),
-        2 => Box::new(days::day_02::Solution::new(data)),
-        3 => Box::new(days::day_03::Solution::new(data)),
-        4 => Box::new(days::day_04::Solution::new(data)),
-        5 => Box::new(days::day_05::Solution::new(data)),
-        6 => Box::new(days::day_06::Solution::new(data)),
-        7 => Box::new(days::day_07::Solution::new(data)),
-        8 => Box::new(days::day_08::Solution::new(data)),
-        9 => Box::new(days::day_09::Solution::new(data)),
+        01 => Box::new(days::day_01::Solution::new(data)),
+        02 => Box::new(days::day_02::Solution::new(data)),
+        03 => Box::new(days::day_03::Solution::new(data)),
+        04 => Box::new(days::day_04::Solution::new(data)),
+        05 => Box::new(days::day_05::Solution::new(data)),
+        06 => Box::new(days::day_06::Solution::new(data)),
+        07 => Box::new(days::day_07::Solution::new(data)),
+        08 => Box::new(days::day_08::Solution::new(data)),
+        09 => Box::new(days::day_09::Solution::new(data)),
+        10 => Box::new(days::day_10::Solution::new(data)),
+
         101 => Box::new(days::bonus_01::Solution::new(data)),
         _ => panic!("Invalid day"),
     }
