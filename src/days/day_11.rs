@@ -117,54 +117,39 @@ fn parse_monkey(input: &str) -> IResult<&str, Monkey> {
     ))
 }
 
-#[derive(Debug)]
-struct MonkeyState<'a> {
-    monkey: &'a Monkey,
-    items: Vec<u64>,
-    inspections: u64,
-}
-
-impl<'a> MonkeyState<'a> {
-    fn new(monkey: &'a Monkey) -> Self {
-        Self {
-            monkey,
-            items: monkey.items.clone(),
-            inspections: 0,
-        }
-    }
-}
-
-fn get_monkey_buisness(monkeys: &Vec<Monkey>, rounds: usize, worry_relief: u64) -> Vec<u64> {
-    let mut monkeys: Vec<MonkeyState> = monkeys
+fn get_monkey_buisness(monkeys: &Vec<Monkey>, rounds: usize, worry_relief: u64) -> Vec<usize> {
+    let modulus = monkeys
         .iter()
-        .map(|monkey| MonkeyState::new(monkey))
-        .collect();
+        .fold(1, |acc, monkey| acc * monkey.test / gcd(acc, monkey.test));
 
-    let modulus = monkeys.iter().fold(1, |acc, monkey| {
-        acc * monkey.monkey.test / gcd(acc, monkey.monkey.test)
-    });
+    let n = monkeys.len();
+    let mut current_items = monkeys.iter().map(|monkey| monkey.items.clone()).collect_vec();
+    let mut throwed_items = vec![Vec::<u64>::new(); n];
+    let mut inspections = vec![0_usize; n];
 
     for _ in 1..=rounds {
-        for i in 0..monkeys.len() {
-            for item in monkeys[i].items.clone() {
-                let item = match monkeys[i].monkey.operation {
+        for (i, monkey) in monkeys.iter().enumerate() {
+            current_items[i].append(&mut throwed_items[i]);
+            inspections[i] += current_items[i].len();
+            for item in current_items[i].drain(..) {
+                let item = match monkey.operation {
                     Operation::Add(value) => item + value,
                     Operation::Mul(value) => item * value,
                     Operation::Square => item * item,
                 } / worry_relief
                     % modulus;
-                let target = match item % monkeys[i].monkey.test {
-                    0 => monkeys[i].monkey.monkey_if_true,
-                    _ => monkeys[i].monkey.monkey_if_false,
+
+                let target = if item % monkey.test == 0 {
+                    monkey.monkey_if_true
+                } else {
+                    monkey.monkey_if_false
                 };
-                monkeys[target].items.push(item)
+                throwed_items[target].push(item);
             }
-            monkeys[i].inspections += monkeys[i].items.len() as u64;
-            monkeys[i].items.clear();
         }
     }
 
-    monkeys.iter().map(|monkey| monkey.inspections).collect()
+    inspections
 }
 
 impl SolutionBase for Solution {
